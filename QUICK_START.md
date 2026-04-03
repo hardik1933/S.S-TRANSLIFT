@@ -30,11 +30,11 @@ http://localhost:5173
 
 **Admin:**
 - Email: `admin@sstranslift.com`
-- Password: `admin123`
+- Password: `change-me!` (update immediately)
 
 **Worker:**
-- Email: `worker@sstranslift.com`
-- Password: `worker123`
+- Email: `change-me@example.com`
+- Password: `change-me!` (update immediately)
 
 ---
 

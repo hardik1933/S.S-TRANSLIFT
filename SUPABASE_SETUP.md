@@ -295,7 +295,7 @@ INSERT INTO auth.users (
   raw_user_meta_data
 ) VALUES (
   'admin@sstranslift.com',
-  crypt('admin123', gen_salt('bf')),
+crypt('change-me-immediately!', gen_salt('bf')),
   NOW(),
   '{"name": "Admin User", "role": "admin"}'::jsonb
 );

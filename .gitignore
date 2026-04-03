@@ -6,7 +6,13 @@ node_modules
 .env.local
 .env.*.local
 .env*.local
+.env.example
+
+# Test scripts
+test-api.*
 
 
-test-api.bat
-test-api.sh
+SETUP_FIX_GUIDE.md
+VISUAL_SETUP_GUIDE.md
+START_HERE.md
+TODO*

@@ -1,4 +1,4 @@
-# ✅ Complete Setup Checklist
+ # ✅ Complete Setup Checklist
 
 Use this checklist to ensure everything is properly configured before deployment.
 
@@ -236,8 +236,7 @@ supabase functions deploy make-server-b414255c --project-ref YOUR_PROJECT_ID
 ### Issue: Can't push to GitHub
 **Solution:**
 ```bash
-# Use personal access token instead of password
-# Create token at: github.com/settings/tokens
+
 git push -u origin main
 # Username: your-username
 # Password: your-token (not your actual password)

@@ -1,4 +1,4 @@
-# 🚀 Deployment Guide - S.S. Translift TMS
+a;# 🚀 Deployment Guide - S.S. Translift TMS
 
 This guide will help you deploy the S.S. Translift Transport Management System to production.
 
@@ -265,9 +265,8 @@ Popular options:
 
 1. Visit your deployed URL
 2. Test login with default credentials:
-   - Admin: `admin@sstranslift.com` / `admin123`
-   - Worker: `worker@sstranslift.com` / `worker123`
 
+  - Worker: `worker@example.com` / `change-me-immediately!`
 ### 7.2 Test API Endpoints
 
 ```bash

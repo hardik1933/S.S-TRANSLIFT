@@ -1,4 +1,4 @@
-/* Supabase config - requires .env.local with VITE_SUPABASE_* vars */
+ /* Supabase config - requires .env.local with VITE_SUPABASE_* vars */
 
 export const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
 if (!projectId) {
