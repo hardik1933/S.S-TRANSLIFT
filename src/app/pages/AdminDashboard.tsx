@@ -3,7 +3,7 @@ import { Card } from '../components/ui/card';
 import { useApp } from '../context/AppContext';
 import { FileText, Clock, CheckCircle, DollarSign, ArrowRight, Download, Users, AlertCircle, TrendingUp } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';

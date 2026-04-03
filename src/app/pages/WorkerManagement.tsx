@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { AdminLayout } from '../components/AdminLayout';
 import { Card } from '../components/ui/card';
@@ -35,8 +35,9 @@ export function WorkerManagement() {
     name: '',
     email: '',
     phoneNumber: '',
-    role: '',
+    jobTitle: '',
   });
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     if (!user || user.role !== 'admin') {
@@ -49,19 +50,32 @@ export function WorkerManagement() {
   const filteredWorkers = workers.filter(worker => 
     worker.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     worker.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    worker.role.toLowerCase().includes(searchQuery.toLowerCase())
+    (worker.role || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleAddWorker = () => {
-    if (!newWorker.name || !newWorker.email || !newWorker.phoneNumber || !newWorker.role) {
+  const handleAddWorker = async () => {
+    if (!newWorker.name || !newWorker.email || !newWorker.phoneNumber || !newWorker.jobTitle) {
       toast.error('Please fill in all fields');
       return;
     }
 
-    addWorker(newWorker);
-    toast.success(`Worker ${newWorker.name} added successfully!`);
-    setIsAddDialogOpen(false);
-    setNewWorker({ name: '', email: '', phoneNumber: '', role: '' });
+    setIsSaving(true);
+    try {
+      await addWorker({
+        name: newWorker.name,
+        email: newWorker.email,
+        phoneNumber: newWorker.phoneNumber,
+        jobTitle: newWorker.jobTitle,
+      });
+      toast.success(`Worker ${newWorker.name} added to the database.`);
+      setIsAddDialogOpen(false);
+      setNewWorker({ name: '', email: '', phoneNumber: '', jobTitle: '' });
+    } catch (e) {
+      console.error(e);
+      toast.error(e instanceof Error ? e.message : 'Could not save worker. Check Supabase policies and table columns.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const activeWorkers = workers.filter(w => w.isActive);
@@ -157,21 +171,24 @@ export function WorkerManagement() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="role">Role</Label>
+                  <Label htmlFor="jobTitle">Job title</Label>
                   <Input
-                    id="role"
+                    id="jobTitle"
                     placeholder="e.g., Transport Coordinator, Field Officer"
-                    value={newWorker.role}
-                    onChange={(e) => setNewWorker({ ...newWorker, role: e.target.value })}
+                    value={newWorker.jobTitle}
+                    onChange={(e) => setNewWorker({ ...newWorker, jobTitle: e.target.value })}
                   />
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Access level for new staff is <strong>worker</strong>. Admins must be promoted in Supabase (Auth user metadata <code className="text-xs">role: admin</code>).
+                  </p>
                 </div>
               </div>
               <div className="flex justify-end gap-3">
                 <Button variant="outline" onClick={() => setIsAddDialogOpen(false)}>
                   Cancel
                 </Button>
-                <Button onClick={handleAddWorker} className="bg-blue-900 hover:bg-blue-800">
-                  Add Worker
+                <Button onClick={() => void handleAddWorker()} className="bg-blue-900 hover:bg-blue-800" disabled={isSaving}>
+                  {isSaving ? 'Saving…' : 'Add Worker'}
                 </Button>
               </div>
             </DialogContent>

@@ -1,12 +1,21 @@
 import { createClient } from '@supabase/supabase-js';
-import { projectId, publicAnonKey } from './info';
+import { supabaseUrl, publicAnonKey } from './info';
+import {
+  mapWorkerFromDb,
+  mapWorkerFormToDb,
+  mapTransportRequestFormToDb,
+  mapTransportRequestFromDb,
+  type WorkerRow,
+} from './mappers';
 
-const supabaseUrl = `https://${projectId}.supabase.co`;
-
-export const supabase = createClient(supabaseUrl, publicAnonKey);
-
-// Use Supabase REST API directly instead of Edge Functions
-const REST_API = `${supabaseUrl}/rest/v1`;
+export const supabase = createClient(supabaseUrl, publicAnonKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+    flowType: 'pkce',
+  },
+});
 
 export const api = {
   // Transport Requests - Using REST API
@@ -20,7 +29,7 @@ export const api = {
       console.error('Supabase Error:', error);
       throw new Error(error.message || 'Failed to fetch requests');
     }
-    return data || [];
+    return (data || []).map((row) => mapTransportRequestFromDb(row as Record<string, unknown>));
   },
 
   async getRequest(id: string) {
@@ -34,13 +43,14 @@ export const api = {
       console.error('Supabase Error:', error);
       throw new Error(error.message || 'Failed to fetch request');
     }
-    return data;
+    return data ? mapTransportRequestFromDb(data as Record<string, unknown>) : null;
   },
 
-  async createRequest(data: any) {
+  async createRequest(form: Record<string, unknown>, addedBy: string) {
+    const payload = mapTransportRequestFormToDb(form, addedBy);
     const { data: result, error } = await supabase
       .from('transport_requests')
-      .insert(data)
+      .insert(payload)
       .select()
       .single();
     
@@ -48,7 +58,7 @@ export const api = {
       console.error('Supabase Error:', error);
       throw new Error(error.message || 'Failed to create request');
     }
-    return result;
+    return mapTransportRequestFromDb(result as Record<string, unknown>);
   },
 
   async updateRequest(id: string, data: any) {
@@ -63,7 +73,7 @@ export const api = {
       console.error('Supabase Error:', error);
       throw new Error(error.message || 'Failed to update request');
     }
-    return result;
+    return result ? mapTransportRequestFromDb(result as Record<string, unknown>) : null;
   },
 
   async deleteRequest(id: string) {
@@ -90,21 +100,32 @@ export const api = {
       console.error('Supabase Error:', error);
       throw new Error(error.message || 'Failed to fetch workers');
     }
-    return data || [];
+    return (data || []).map((row) => mapWorkerFromDb(row as WorkerRow));
   },
 
-  async createWorker(data: any) {
-    const { data: result, error } = await supabase
+  async createWorker(data: Record<string, unknown>) {
+    let payload = mapWorkerFormToDb(data as Parameters<typeof mapWorkerFormToDb>[0]);
+    let { data: result, error } = await supabase
       .from('workers')
-      .insert(data)
+      .insert(payload)
       .select()
       .single();
-    
+
+    if (error && 'job_title' in payload && /job_title|schema cache/i.test(error.message || '')) {
+      const { job_title: _j, ...rest } = payload;
+      const retry = await supabase.from('workers').insert(rest).select().single();
+      result = retry.data;
+      error = retry.error;
+      if (!error) {
+        console.warn('[workers job_title] Retrying insert without job_title. Run migration 003_workers_job_title.sql.');
+      }
+    }
+
     if (error) {
       console.error('Supabase Error:', error);
       throw new Error(error.message || 'Failed to create worker');
     }
-    return result;
+    return mapWorkerFromDb(result as WorkerRow);
   },
 
   async updateWorker(id: string, data: any) {
@@ -119,7 +140,7 @@ export const api = {
       console.error('Supabase Error:', error);
       throw new Error(error.message || 'Failed to update worker');
     }
-    return result;
+    return result ? mapWorkerFromDb(result as WorkerRow) : null;
   },
 
   async deleteWorker(id: string) {

@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router';
-import { useApp } from '../context/AppContext';
+import { useNavigate } from 'react-router-dom';
+
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -8,27 +8,35 @@ import { Card } from '../components/ui/card';
 import { TruckIcon, ArrowLeft } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { toast } from 'sonner';
+import { useApp } from '../context/AppContext';
 
 export function LoginPage() {
   const navigate = useNavigate();
   const { login } = useApp();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleLogin = (role: 'worker' | 'admin') => {
+  const handleLogin = async (role: 'worker' | 'admin') => {
     if (!email || !password) {
       toast.error('Please fill in all fields');
       return;
     }
-    
-    const success = login(email, password, role);
-    if (success) {
-      toast.success('Login successful!');
-      if (role === 'admin') {
-        navigate('/admin/dashboard');
-      } else {
-        navigate('/worker/dashboard');
+
+    setIsSubmitting(true);
+    try {
+      const success = await login(email, password, role);
+      if (success) {
+        toast.success('Login successful!');
+        if (role === 'admin') {
+          navigate('/admin/dashboard');
+        } else {
+          navigate('/worker/dashboard');
+        }
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -60,7 +68,7 @@ export function LoginPage() {
             </TabsList>
 
             <TabsContent value="worker">
-              <form onSubmit={(e) => { e.preventDefault(); handleLogin('worker'); }} className="space-y-4">
+              <form onSubmit={(e) => { e.preventDefault(); void handleLogin('worker'); }} className="space-y-4">
                 <div>
                   <Label htmlFor="worker-email">Email</Label>
                   <Input
@@ -86,8 +94,8 @@ export function LoginPage() {
                 <div className="flex items-center justify-between text-sm">
                   <a href="#" className="text-blue-900 dark:text-blue-400 hover:underline">Forgot password?</a>
                 </div>
-                <Button type="submit" className="w-full bg-blue-900 hover:bg-blue-800">
-                  Login as Worker
+                <Button type="submit" className="w-full bg-blue-900 hover:bg-blue-800" disabled={isSubmitting}>
+                  {isSubmitting ? 'Signing in...' : 'Login as Worker'}
                 </Button>
                 <div className="text-center text-sm text-slate-600 dark:text-slate-400">
                   Don't have an account?{' '}
@@ -103,7 +111,7 @@ export function LoginPage() {
             </TabsContent>
 
             <TabsContent value="admin">
-              <form onSubmit={(e) => { e.preventDefault(); handleLogin('admin'); }} className="space-y-4">
+              <form onSubmit={(e) => { e.preventDefault(); void handleLogin('admin'); }} className="space-y-4">
                 <div>
                   <Label htmlFor="admin-email">Admin Email</Label>
                   <Input
@@ -129,8 +137,8 @@ export function LoginPage() {
                 <div className="flex items-center justify-between text-sm">
                   <a href="#" className="text-blue-900 dark:text-blue-400 hover:underline">Forgot password?</a>
                 </div>
-                <Button type="submit" className="w-full bg-orange-600 hover:bg-orange-700">
-                  Login as Admin
+                <Button type="submit" className="w-full bg-orange-600 hover:bg-orange-700" disabled={isSubmitting}>
+                  {isSubmitting ? 'Signing in...' : 'Login as Admin'}
                 </Button>
               </form>
             </TabsContent>

@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { AdminLayout } from '../components/AdminLayout';
 import { Card } from '../components/ui/card';
@@ -42,11 +42,11 @@ export function RequestManagement() {
 
   const filteredRequests = requests.filter(request => {
     const matchesSearch = 
-      request.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      request.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      request.companyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      request.pickupLocation.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      request.dropLocation.toLowerCase().includes(searchQuery.toLowerCase());
+      (request.id || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (request.customerName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (request.companyName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (request.pickupLocation || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (request.dropLocation || '').toLowerCase().includes(searchQuery.toLowerCase());
     
     const matchesStatus = statusFilter === 'all' || request.status === statusFilter;
     
@@ -64,9 +64,14 @@ export function RequestManagement() {
     return <Badge variant={style.variant} className={style.className}>{status}</Badge>;
   };
 
-  const handleStatusChange = (requestId: string, newStatus: any) => {
-    updateRequestStatus(requestId, newStatus);
-    toast.success(`Request ${requestId} status updated to ${newStatus}`);
+  const handleStatusChange = async (requestId: string, newStatus: string) => {
+    try {
+      await updateRequestStatus(requestId, newStatus);
+      toast.success(`Request ${requestId} status updated to ${newStatus}`);
+    } catch (err) {
+      console.error(err);
+      toast.error(err instanceof Error ? err.message : 'Could not update status in Supabase.');
+    }
   };
 
   const handleExportToExcel = () => {
@@ -293,7 +298,7 @@ export function RequestManagement() {
                       <TableCell>
                         <Select
                           value={request.status}
-                          onValueChange={(value) => handleStatusChange(request.id, value)}
+                          onValueChange={(value) => void handleStatusChange(request.id, value)}
                         >
                           <SelectTrigger className="w-[140px]">
                             {getStatusBadge(request.status)}

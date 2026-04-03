@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '../components/ui/button';
 import { Card } from '../components/ui/card';
 import { TruckIcon, Truck, Package, Box, Factory, Ship, Building2, ArrowRight, Phone, Mail, MapPin, CheckCircle } from 'lucide-react';

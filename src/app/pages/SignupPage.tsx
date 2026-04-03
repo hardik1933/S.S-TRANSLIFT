@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -18,8 +18,9 @@ export function SignupPage() {
     companyName: '',
     phone: '',
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.name || !formData.email || !formData.password || !formData.companyName || !formData.phone) {
@@ -27,17 +28,23 @@ export function SignupPage() {
       return;
     }
 
-    const success = signup(
-      formData.name,
-      formData.email,
-      formData.password,
-      formData.companyName,
-      formData.phone
-    );
+    setIsSubmitting(true);
+    try {
+      const success = await signup(
+        formData.name,
+        formData.email,
+        formData.password,
+        formData.companyName,
+        formData.phone,
+        'worker'
+      );
 
-    if (success) {
-      toast.success('Account created successfully!');
-      navigate('/customer/dashboard');
+      if (success) {
+        toast.success('Account created. Please login after email verification.');
+        navigate('/login');
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -62,7 +69,7 @@ export function SignupPage() {
             <p className="text-sm text-slate-600 dark:text-slate-400">Join S.S. Translift - Navi Mumbai</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
             <div>
               <Label htmlFor="name">Full Name</Label>
               <Input
@@ -123,8 +130,8 @@ export function SignupPage() {
               />
             </div>
 
-            <Button type="submit" className="w-full bg-blue-900 hover:bg-blue-800">
-              Create Account
+            <Button type="submit" className="w-full bg-blue-900 hover:bg-blue-800" disabled={isSubmitting}>
+              {isSubmitting ? 'Creating Account...' : 'Create Account'}
             </Button>
 
             <div className="text-center text-sm text-slate-600 dark:text-slate-400">

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -57,6 +57,12 @@ export function TransportEntryForm() {
     }
   }, [user, navigate]);
 
+  useEffect(() => {
+    if (user?.name) {
+      setFormData((prev) => ({ ...prev, addedBy: user.name }));
+    }
+  }, [user?.name]);
+
   // Auto-calculate company margin
   useEffect(() => {
     const margin = (formData.freightAmount || 0) - (formData.truckFreight || 0);
@@ -73,7 +79,7 @@ export function TransportEntryForm() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Validation
@@ -90,9 +96,18 @@ export function TransportEntryForm() {
       return;
     }
 
-    addRequest(formData);
-    setSubmitted(true);
-    toast.success('Transport entry submitted successfully! Awaiting admin approval.');
+    try {
+      await addRequest({ ...formData } as unknown as Record<string, unknown>);
+      setSubmitted(true);
+      toast.success('Transport entry saved to the database. Awaiting admin approval.');
+    } catch (err) {
+      console.error(err);
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : 'Could not save entry. Check required Supabase columns and RLS for transport_requests.',
+      );
+    }
   };
 
   if (submitted) {
@@ -187,7 +202,7 @@ export function TransportEntryForm() {
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-8">
+          <form onSubmit={(e) => void handleSubmit(e)} className="space-y-8">
             {/* Basic Information */}
             <div>
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
