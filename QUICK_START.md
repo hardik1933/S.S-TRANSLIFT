@@ -28,13 +28,7 @@ http://localhost:5173
 
 ### 4. Login
 
-**Admin:**
-- Email: `admin@sstranslift.com`
-- Password: `change-me!` (update immediately)
 
-**Worker:**
-- Email: `change-me@example.com`
-- Password: `change-me!` (update immediately)
 
 ---
 
