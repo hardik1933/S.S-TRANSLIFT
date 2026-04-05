@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -12,11 +12,20 @@ import { useApp } from '../context/AppContext';
 
 export function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useApp();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    const state = location.state as { unauthorized?: boolean } | null;
+    if (state?.unauthorized) {
+      toast.error('Unauthorized access');
+      navigate('/login', { replace: true, state: {} });
+    }
+  }, [location, navigate]);
 
   const handleLogin = async (role: 'worker' | 'admin') => {
     if (!email || !password) {
@@ -30,9 +39,9 @@ export function LoginPage() {
       if (success) {
         toast.success('Login successful!');
         if (role === 'admin') {
-          navigate('/admin/dashboard');
+          navigate('/admin-dashboard');
         } else {
-          navigate('/worker/dashboard');
+          navigate('/worker-dashboard');
         }
       }
     } finally {

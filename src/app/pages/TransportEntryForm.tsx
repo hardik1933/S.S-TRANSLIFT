@@ -124,7 +124,7 @@ export function TransportEntryForm() {
           <div className="space-y-3">
             <Button 
               className="w-full bg-blue-900 hover:bg-blue-800"
-              onClick={() => navigate('/worker/dashboard')}
+              onClick={() => navigate('/worker-dashboard')}
             >
               Back to Dashboard
             </Button>
@@ -176,7 +176,7 @@ export function TransportEntryForm() {
       <header className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center space-x-4">
-            <Button variant="ghost" onClick={() => navigate('/worker/dashboard')}>
+            <Button variant="ghost" onClick={() => navigate('/worker-dashboard')}>
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back
             </Button>
@@ -530,7 +530,7 @@ export function TransportEntryForm() {
               <Button 
                 type="button"
                 variant="outline"
-                onClick={() => navigate('/worker/dashboard')}
+                onClick={() => navigate('/worker-dashboard')}
               >
                 Cancel
               </Button>

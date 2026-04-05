@@ -166,7 +166,7 @@ export function AdminDashboard() {
                   variant="outline" 
                   size="sm" 
                   className="w-full mt-2"
-                  onClick={() => navigate('/admin/requests')}
+                  onClick={() => navigate('/admin-dashboard/requests')}
                 >
                   Manage Requests
                   <ArrowRight className="w-4 h-4 ml-2" />

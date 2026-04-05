@@ -1,5 +1,7 @@
 .vercel
 node_modules
+dist
+supabase/.temp
 
 # Environment variables
 .env

@@ -194,7 +194,7 @@ export function WorkerDashboard() {
           <Button 
             size="lg" 
             className="bg-blue-900 hover:bg-blue-800"
-            onClick={() => navigate('/worker/new-entry')}
+            onClick={() => navigate('/worker-dashboard/new-entry')}
           >
             <Plus className="w-5 h-5 mr-2" />
             Add New Transport Entry
@@ -255,7 +255,7 @@ export function WorkerDashboard() {
               <div className="p-12 text-center">
                 <FileText className="w-12 h-12 mx-auto mb-4 text-slate-400" />
                 <p className="text-slate-600 dark:text-slate-400">No entries yet</p>
-                <Button className="mt-4" onClick={() => navigate('/worker/new-entry')}>
+                <Button className="mt-4" onClick={() => navigate('/worker-dashboard/new-entry')}>
                   Add Your First Entry
                 </Button>
               </div>

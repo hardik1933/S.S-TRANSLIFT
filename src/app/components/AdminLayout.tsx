@@ -41,11 +41,11 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const [sidebarExpanded, setSidebarExpanded] = useState(false);
 
   const menuItems = [
-    { icon: LayoutDashboard, label: 'Dashboard', path: '/admin/dashboard' },
-    { icon: FileText, label: 'Transport Requests', path: '/admin/requests' },
-    { icon: Users, label: 'Workers', path: '/admin/workers' },
-    { icon: BarChart3, label: 'Reports & Analytics', path: '/admin/reports' },
-    { icon: Settings, label: 'Settings', path: '/admin/settings' },
+    { icon: LayoutDashboard, label: 'Dashboard', path: '/admin-dashboard' },
+    { icon: FileText, label: 'Transport Requests', path: '/admin-dashboard/requests' },
+    { icon: Users, label: 'Workers', path: '/admin-dashboard/workers' },
+    { icon: BarChart3, label: 'Reports & Analytics', path: '/admin-dashboard/reports' },
+    { icon: Settings, label: 'Settings', path: '/admin-dashboard/settings' },
   ];
 
   const handleLogout = () => {

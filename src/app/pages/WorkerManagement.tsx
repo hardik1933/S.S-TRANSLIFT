@@ -28,12 +28,13 @@ import { toast } from 'sonner';
 
 export function WorkerManagement() {
   const navigate = useNavigate();
-  const { user, workers, addWorker } = useApp();
+  const { user, workers, createWorkerAccount } = useApp();
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [newWorker, setNewWorker] = useState({
     name: '',
     email: '',
+    password: '',
     phoneNumber: '',
     jobTitle: '',
   });
@@ -54,22 +55,28 @@ export function WorkerManagement() {
   );
 
   const handleAddWorker = async () => {
-    if (!newWorker.name || !newWorker.email || !newWorker.phoneNumber || !newWorker.jobTitle) {
+    if (!newWorker.name || !newWorker.email || !newWorker.password || !newWorker.phoneNumber || !newWorker.jobTitle) {
       toast.error('Please fill in all fields');
+      return;
+    }
+
+    if (newWorker.password.length < 6) {
+      toast.error('Password must be at least 6 characters');
       return;
     }
 
     setIsSaving(true);
     try {
-      await addWorker({
+      await createWorkerAccount({
         name: newWorker.name,
         email: newWorker.email,
+        password: newWorker.password,
         phoneNumber: newWorker.phoneNumber,
         jobTitle: newWorker.jobTitle,
       });
-      toast.success(`Worker ${newWorker.name} added to the database.`);
+      toast.success(`Worker ${newWorker.name} added: Auth user + profile + directory row.`);
       setIsAddDialogOpen(false);
-      setNewWorker({ name: '', email: '', phoneNumber: '', jobTitle: '' });
+      setNewWorker({ name: '', email: '', password: '', phoneNumber: '', jobTitle: '' });
     } catch (e) {
       console.error(e);
       toast.error(e instanceof Error ? e.message : 'Could not save worker. Check Supabase policies and table columns.');
@@ -162,6 +169,17 @@ export function WorkerManagement() {
                   />
                 </div>
                 <div className="space-y-2">
+                  <Label htmlFor="password">Temporary password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="Min. 6 characters"
+                    value={newWorker.password}
+                    onChange={(e) => setNewWorker({ ...newWorker, password: e.target.value })}
+                    autoComplete="new-password"
+                  />
+                </div>
+                <div className="space-y-2">
                   <Label htmlFor="phone">Phone Number</Label>
                   <Input
                     id="phone"
@@ -179,7 +197,9 @@ export function WorkerManagement() {
                     onChange={(e) => setNewWorker({ ...newWorker, jobTitle: e.target.value })}
                   />
                   <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Access level for new staff is <strong>worker</strong>. Admins must be promoted in Supabase (Auth user metadata <code className="text-xs">role: admin</code>).
+                    Creates a real Supabase Auth user, a <code className="text-xs">profiles</code> row with role{' '}
+                    <strong>worker</strong>, and a <code className="text-xs">workers</code> row. Requires the{' '}
+                    <code className="text-xs">create-worker</code> Edge Function deployed.
                   </p>
                 </div>
               </div>

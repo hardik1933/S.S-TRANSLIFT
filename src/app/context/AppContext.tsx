@@ -1,12 +1,14 @@
 import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
-import { api } from '../../../utils/supabase/client';
+import { api } from '../../utils/supabase/client';
 import { toast } from 'sonner';
 import {
   login as authLogin,
   logout as authLogout,
   signup as authSignup,
-} from '../../../utils/supabase/auth';
-import { supabase } from '../../../utils/supabase/client';
+} from '../../utils/supabase/auth';
+import { supabase } from '../../utils/supabase/client';
+import { fetchProfileByUserId } from '../../utils/supabase/profiles';
+import { createWorkerAccount as provisionWorkerAccount } from '../../utils/supabase/workerProvisioning';
 
 interface User {
   id: string;
@@ -77,9 +79,10 @@ interface AppContextType {
     role?: 'admin' | 'worker'
   ) => Promise<boolean>;
   logout: () => Promise<void>;
-  addWorker: (worker: {
+  createWorkerAccount: (worker: {
     name: string;
     email: string;
+    password: string;
     phoneNumber: string;
     jobTitle: string;
   }) => Promise<void>;
@@ -101,11 +104,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [notifications, setNotifications] = useState<Array<{id: string, message: string, read: boolean}>>([]);
 
   useEffect(() => {
-    loadUser();
+    void loadUser();
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      applySessionUser(session?.user ?? null);
+      void hydrateFromAuthUser(session?.user ?? null);
     });
 
     return () => {
@@ -113,7 +116,7 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     };
   }, []);
 
-  const applySessionUser = (sessionUser: any | null) => {
+  const hydrateFromAuthUser = async (sessionUser: { id: string; email?: string; user_metadata?: Record<string, unknown> } | null) => {
     if (!sessionUser) {
       setUser(null);
       setWorkers([]);
@@ -122,27 +125,36 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       return;
     }
 
-    const role = (sessionUser.user_metadata?.role as 'admin' | 'worker' | undefined) ?? 'worker';
+    const profile = await fetchProfileByUserId(sessionUser.id);
+    if (!profile || (profile.role !== 'admin' && profile.role !== 'worker')) {
+      await supabase.auth.signOut();
+      setUser(null);
+      setWorkers([]);
+      setRequests([]);
+      setLoading(false);
+      return;
+    }
+
     const name =
       (sessionUser.user_metadata?.name as string | undefined) ??
-      sessionUser.email?.split('@')[0] ??
+      profile.email.split('@')[0] ??
       'User';
 
     setUser({
       id: sessionUser.id,
-      email: sessionUser.email ?? '',
+      email: profile.email,
       name,
-      role,
+      role: profile.role,
       phone: sessionUser.user_metadata?.phone as string | undefined,
     });
 
-    loadData();
+    await loadData();
   };
 
   const loadUser = async () => {
     setLoading(true);
     const { data } = await supabase.auth.getSession();
-    applySessionUser(data.session?.user ?? null);
+    await hydrateFromAuthUser(data.session?.user ?? null);
   };
 
   const loadData = async () => {
@@ -206,9 +218,9 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
       setRequests([]);
     },
 
-    async addWorker(workerData) {
-      const created = await api.createWorker(workerData as unknown as Record<string, unknown>);
-      setWorkers((prev) => [created as Worker, ...prev]);
+    async createWorkerAccount(workerData) {
+      await provisionWorkerAccount(workerData);
+      await loadData();
     },
     async addRequest(data) {
       if (!user?.name) {
